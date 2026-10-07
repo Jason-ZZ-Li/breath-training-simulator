@@ -41935,7 +41935,7 @@ const decodeFlowText = (line) => {
     const s1Pa = Number(match[1]);
     const s2Pa = Number(match[2]);
     const dpPa = Number(match[3]);
-    const flowQ = Number(match[4]);
+    const flowQ = Number(match[4]) * 3;
     if (!Number.isFinite(s1Pa) || !Number.isFinite(s2Pa) || !Number.isFinite(dpPa) || !Number.isFinite(flowQ))
         return null;
     return {

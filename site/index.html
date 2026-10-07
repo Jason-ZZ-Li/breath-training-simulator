@@ -44696,43 +44696,35 @@ function App() {
     const sessionSecondsLeft = Math.max(0, Math.ceil(totalDuration - elapsed));
     const sessionRepsLeft = Math.max(0, loopCount - (currentLoop - 1));
     const faultCodeOnScreen = devicePage === 'PAUSE' && pauseCode;
-    const postScreen = screenMode.key === 'post' && sessionTiming;
+    const repScreen = screenMode.key === 'pre' || screenMode.key === 'post';
     const countdownValue = screenMode.key === 'pft'
         ? null
-        : screenMode.key === 'post'
-            ? (postScreen ? Math.floor(postView.elapsed) : null)
-            : screenMode.key === 'pre'
-                ? (sessionTiming ? (PRE_GROUP_REPS - ((currentLoop - 1) % PRE_GROUP_REPS)) : PRE_GROUP_REPS)
-                : (sessionTiming ? sessionSecondsLeft : Math.max(0, Math.ceil(totalDuration)));
-    const countdownUnit = screenMode.key === 'pre' ? '次' : 's';
+        : repScreen
+            ? (sessionTiming ? (PRE_GROUP_REPS - ((currentLoop - 1) % PRE_GROUP_REPS)) : PRE_GROUP_REPS)
+            : (sessionTiming ? sessionSecondsLeft : Math.max(0, Math.ceil(totalDuration)));
+    const countdownUnit = repScreen ? '次' : 's';
     // 机身屏单向进度条：顶部显示当前吸/呼图标
     // 吸气蓝：上→下填充；呼气橙：下→上填充
     const guideRunning = runState === 'RUNNING' || runState === 'PAUSED';
-    const guideDirection = postScreen
-        ? postView.dir
-        : !guideRunning
-            ? 'NONE'
-            : phase.key === 'INHALE' || phase.key === 'HOLD_IN'
-                ? 'INHALE'
-                : phase.key === 'EXHALE' || phase.key === 'HOLD_OUT'
-                    ? 'EXHALE'
-                    : 'NONE';
-    const guideProgress = postScreen
-        ? postView.progress
-        : !guideRunning || phaseGate === 'cue'
-            ? 0
-            : phase.key === 'HOLD_IN' || phase.key === 'HOLD_OUT'
-                ? 1
-                : screenMode.key === 'pre' && phase.key === 'EXHALE'
-                    ? Math.max(0, Math.min(1, actualBreathRef.current / (phase.duration * PRE_PASS_RATIO)))
-                    : Math.max(0, Math.min(1, phase.progress));
-    const guideColored = postScreen
-        ? postView.dir !== 'NONE'
-        : runState === 'RUNNING'
-            && phaseGate === 'counting'
-            && isBreathPhase
-            && inputDirection === phase.key
-            && activeEffort > requiredThreshold;
+    const guideDirection = !guideRunning
+        ? 'NONE'
+        : phase.key === 'INHALE' || phase.key === 'HOLD_IN'
+            ? 'INHALE'
+            : phase.key === 'EXHALE' || phase.key === 'HOLD_OUT'
+                ? 'EXHALE'
+                : 'NONE';
+    const guideProgress = !guideRunning || phaseGate === 'cue'
+        ? 0
+        : phase.key === 'HOLD_IN' || phase.key === 'HOLD_OUT'
+            ? 1
+            : repScreen && phase.key === (screenMode.key === 'post' ? 'INHALE' : 'EXHALE')
+                ? Math.max(0, Math.min(1, actualBreathRef.current / (phase.duration * PRE_PASS_RATIO)))
+                : Math.max(0, Math.min(1, phase.progress));
+    const guideColored = runState === 'RUNNING'
+        && phaseGate === 'counting'
+        && isBreathPhase
+        && inputDirection === phase.key
+        && activeEffort > requiredThreshold;
     const guideBarDirection = guideColored ? guideDirection : 'NONE';
     const guideUnit = 'L/min';
     const showGuideScreen = devicePage === 'MODE' || devicePage === 'READY' || devicePage === 'TRAINING' || devicePage === 'PAUSE';
